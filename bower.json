@@ -1,0 +1,26 @@
+{
+  "name": "ColResize",
+  "homepage": "https://github.com/smasala/ColResize",
+  "authors": [
+    "Steven Masala <me@smasala.com>"
+  ],
+  "description": "Column resize DataTables extension",
+  "main": "js/dataTables.colResize.js",
+  "dependencies": {
+    "jquery": ">=1.7.0",
+    "datatables": ">=1.10.15"
+  },
+  "keywords": [
+    "resize",
+    "column",
+    "datatables"
+  ],
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ]
+}

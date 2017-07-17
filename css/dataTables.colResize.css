@@ -1,0 +1,35 @@
+.dt-colresizable {
+    height: 0;
+    width: 100%;
+    position: relative;
+    top: 20px;
+}
+
+.dt-colresizable .dt-colresizable-col {
+    display: block;
+    position: absolute;
+    width: 5px;
+    cursor: ew-resize;
+    background-color: #000;
+}
+
+.dt-colresizable .dt-colresizable-col:last-child {
+    pointer-events: none;
+    visibility: hidden;
+}
+
+table.dataTable {
+    table-layout: fixed;
+}
+
+table.dataTable thead th,
+table.dataTable tbody td,
+table.dataTable tfoot td {
+    overflow: hidden;
+}
+
+table.dataTable thead th,
+table.dataTable tfoot td {
+    padding-left: 0;
+    padding-right: 0;
+}

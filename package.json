@@ -1,0 +1,31 @@
+{
+  "name": "colresize",
+  "version": "1.0.0",
+  "description": "ColResize extenstion for DataTables",
+  "main": "js/dataTables.colResize.js",
+  "directories": {
+    "example": "examples"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "jshint": "^2.9.5"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/smasala/ColResize.git"
+  },
+  "keywords": [
+    "column",
+    "resize",
+    "datatables"
+  ],
+  "author": "Steven Masala <me@smasala.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/smasala/ColResize/issues"
+  },
+  "homepage": "https://github.com/smasala/ColResize#readme"
+}
