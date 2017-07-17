@@ -1,5 +1,5 @@
 {
-  "name": "datatables.net",
+  "name": "datatables.net-colresize",
   "version": "1.0.0",
   "description": "ColResize extenstion for DataTables",
   "main": "js/dataTables.colResize.js",
