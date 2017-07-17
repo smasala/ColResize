@@ -35,6 +35,13 @@ $(document).ready( function () {
 } );
 ```
 
+```css
+/** Customise the resize bar **/
+.dt-colresizable-col {
+    /** styles go here **/
+}
+```
+
 
 # Documentation / support
 

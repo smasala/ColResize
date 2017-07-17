@@ -1,3 +1,7 @@
 body {
     padding: 50px 20vw;
 }
+
+.dt-colresizable-col {
+    background-color: #000;
+}

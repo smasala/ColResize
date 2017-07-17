@@ -1,3 +1,7 @@
+/**! ColResize 1.0.2
+ * ©2017 Steven Masala
+ */
+
 .dt-colresizable {
     height: 0;
     width: 100%;
@@ -11,7 +15,6 @@
     box-sizing: border-box;
     width: 5px;
     cursor: ew-resize;
-    background-color: transparent;
 }
 
 .dt-colresizable .dt-colresizable-col:last-child {
