@@ -8,9 +8,10 @@
 .dt-colresizable .dt-colresizable-col {
     display: block;
     position: absolute;
+    box-sizing: border-box;
     width: 5px;
     cursor: ew-resize;
-    background-color: #000;
+    background-color: transparent;
 }
 
 .dt-colresizable .dt-colresizable-col:last-child {

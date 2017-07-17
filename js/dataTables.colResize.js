@@ -75,7 +75,16 @@
          * @type {object}
          * @private
          */
-        _defaults: {},
+        _defaults: {
+            /**
+             * Determines the minimum width size a column is allowed to be
+             * @property minColumnWidth
+             * @public
+             * @type {integer}
+             * @default 20
+             */
+            minColumnWidth: 20
+        },
         /**
          * Created during extension init
          * {} <= defaults <= userOptions
@@ -110,6 +119,30 @@
         * @default {false}
         */
         _isDragging: false,
+        /**
+         * Element cache variable.
+         * @property _container
+         * @type {jQuery}
+         * @private
+         * @default null
+         */
+        _container: null,
+        /**
+         * Array of all generated draggable columns.
+         * @property _columns
+         * @type {jQuery[]}
+         * @private
+         * @default null
+         */
+        _columns: null,
+        /**
+         * Interval value used to check if the table height has changed.
+         * @property _tableHeight
+         * @type {integer}
+         * @private
+         * @default 0
+         */
+        _tableHeight: 0,
         /**
          * css class for draggable container
          * @private
@@ -165,13 +198,16 @@
          * @returns null
          */
         buildDom: function() {
-            var that = this,
-                $container = $("<div class='" + that.CLASS_WRAPPER + "'></div>");
-            $container.css({
+            var that = this;
+            that._container = $("<div class='" + that.CLASS_WRAPPER + "'></div>");
+            that._container.css({
                 width: that._table.outerWidth()
             });
-            $container.append(that.buildColDoms());
-            that._table.before($container);
+            // build and insert columns into container
+            that._container.append(that.buildColDoms());
+            // cache jQuery columns
+            that._columns = $("." + that.CLASS_COLUMN, that._container);
+            that._table.before(that._container);
             // add window resize events etc?
         },
         /**
@@ -183,24 +219,24 @@
             // replicate table header widths
             var that = this,
                 $ths = that._table.find("thead th"),    // get all table headers
-                tableHeight = that._table.outerHeight(),    // get table height
                 $th,
                 $cols = [],
                 $col,
                 thWidth = 0;
+            that._tableHeight = that._table.outerHeight();    // get table height
             for (var i = 0, l = $ths.length; i < l; i++) {
                 $th = $($ths[i]);   // get individual <th>
                 thWidth = $th.outerWidth(); // get <th> current width
-                $col = $("<div class='" + that.DATA_TAG_ITEM + "'></div>"); // create drag column item <div>
+                $col = $("<div class='" + that.CLASS_COLUMN + "'></div>"); // create drag column item <div>
                 // place the drag column at the end of the <th> and as tall as the table itself
                 $col.css({
                     left: $th.position().left + thWidth,
-                    height: tableHeight
+                    height: that._tableHeight
                 });
                 // save the current width
                 $col.data(that.DATA_TAG_WIDTH, thWidth);
                 // save the <th> element reference for easy access later
-                $col.data(that.DATA_TAG_WIDTH, $th);
+                $col.data(that.DATA_TAG_ITEM, $th);
                 // set the width on the <th> if it wasn't set inline already <th style="width: {N}px;"></th>
                 $th.css("width", thWidth);
                 // register necessary events
@@ -241,6 +277,7 @@
                     // remove the drag (mousemove) event listener
                     $(document).off("mousemove", mouseMoveFunc);
                 }).on("mousemove", mouseMoveFunc);  //on mousemove
+                return false;   // stop text highlighting
             };
         },
         /**
@@ -257,8 +294,15 @@
                 // caculate the different between where the mouse has moved to
                 // and the left position of the column that is being dragged
                 diff = (event.clientX - $col.offset().left);
-                that.updateColumn($col, diff);
-                that.updateColumn($col.next(), diff < 0 ? Math.abs(diff) : -Math.abs(diff), true);
+                // check whether neighbouring is still bigger than 10px if a resize
+                // takes place.
+                if (($col.position().left + diff) < ($col.next().position().left - that.options.minColumnWidth)) {
+                    if (that.updateColumn($col, diff)) {
+                        // col was resized so resize the neighbouring col too.
+                        that.updateColumn($col.next(), diff < 0 ? Math.abs(diff) : -Math.abs(diff), true);
+                    }
+                }
+                that.checkTableHeight()
             }
         },
         /**
@@ -268,23 +312,45 @@
          * @param {integer} by - width to change the column size by
          * @param {boolean} nextColumn [default=false] - set to true if the column being resized is not the original but
          * it's sibling.
+         * @return {boolean} {true} if resize was possible, {false} if not;
          */
         updateColumn: function($col, by, nextColumn) {
             var that = this,
                 // calculate the new width of the column
                 newWidth = by + $col.data(that.DATA_TAG_WIDTH);
-            if(!nextColumn) {
-                // set the new let position of the dragged column (div)
-                $col.css({
-                    left: by + $col.position().left
+            //only resize to a min of 10px
+            if (newWidth > that.options.minColumnWidth) {
+                if(!nextColumn) {
+                    // set the new let position of the dragged column (div)
+                    $col.css({
+                        left: by + $col.position().left
+                    });
+                }
+                // get the actual <th> column of the table and set the new width
+                $col.data(that.DATA_TAG_ITEM).css({
+                    width: newWidth
                 });
+                // save the new width for the next mouse drag call
+                $col.data(that.DATA_TAG_WIDTH, newWidth);
+                return true;
             }
-            // get the actual <th> column of the table and set the new width
-            $col.data(that.DATA_TAG_ITEM).css({
-                width: newWidth
-            });
-            // save the new width for the next mouse drag call
-            $col.data(that.DATA_TAG_WIDTH, newWidth);
+            return false;
+        },
+        /**
+         * Checks whether the height of the table has changed, 
+         * if it has, then it set the draggable column items with 
+         * the new height values.
+         * @method checkTableHeight
+         * @returns null
+         */
+        checkTableHeight: function() {
+            var that = this,
+                newHeight = that._table.outerHeight();
+            if (newHeight !== that._tableHeight) {
+                that._tableHeight = that._table.outerHeight();
+                that._columns.css("height", newHeight);
+            }
+
         }
     });
 
