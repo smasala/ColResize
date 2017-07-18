@@ -1,0 +1,25 @@
+{
+  "name": "dt-colresize",
+  "description": "ColResize extenstion for DataTables. Allows the user to change the column widths by simply dragging them.",
+  "main": "js/dataTables.colResize.js",
+  "authors": [
+    "Steven Masala <me@smasala.com>"
+  ],
+  "license": "MIT",
+  "dependencies": {
+    "jquery": ">=1.11.0"
+  },
+  "keywords": [
+    "column",
+    "resize",
+    "datatables"
+  ],
+  "homepage": "https://github.com/smasala/ColResize",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ]
+}
