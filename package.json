@@ -8,10 +8,12 @@
   },
   "dependencies": {},
   "devDependencies": {
+    "bower": "^1.8.0",
     "jshint": "^2.9.5"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "install": "bower install"
   },
   "repository": {
     "type": "git",
