@@ -1,11 +1,11 @@
-/**! ColResize 1.0.2
+/**! ColResize 1.0.3
  * ©2017 Steven Masala
  */
 
 /**
  * @summary ColResize
  * @description Provide the ability to resize the columns in a DataTable
- * @version 1.0.2
+ * @version 1.0.3
  * @file dataTables.colResize.js
  * @author Steven Masala <me@smasala.com>
  * @copyright Copyright 2017 Steven Masala
@@ -68,7 +68,7 @@
          * @property version
          * @type {string} semVer
          */
-        version: "1.0.2",
+        version: "1.0.3",
         /**
          * Default options for extension
          * @property _defaults

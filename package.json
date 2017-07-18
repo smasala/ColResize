@@ -1,6 +1,6 @@
 {
   "name": "dt-colresize",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "ColResize extenstion for DataTables",
   "main": "js/dataTables.colResize.js",
   "directories": {
