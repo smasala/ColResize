@@ -9,6 +9,9 @@
   "dependencies": {},
   "devDependencies": {
     "bower": "^1.8.0",
+    "datatables.net": "^1.10.15",
+    "datatables.net-dt": "^1.10.15",
+    "jquery": "^1.11.0",
     "jshint": "^2.9.5"
   },
   "scripts": {
