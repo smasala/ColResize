@@ -1,11 +1,11 @@
-/**! ColResize 1.0.4
+/**! ColResize 1.0.5
  * ©2017 Steven Masala
  */
 
 /**
  * @summary ColResize
  * @description Provide the ability to resize the columns in a DataTable
- * @version 1.0.4
+ * @version 1.0.5
  * @file dataTables.colResize.js
  * @author Steven Masala <me@smasala.com>
  * @copyright Copyright 2017 Steven Masala
@@ -68,7 +68,7 @@
          * @property version
          * @type {string} semVer
          */
-        version: "1.0.4",
+        version: "1.0.5",
         /**
          * Default options for extension
          * @property _defaults
@@ -218,7 +218,7 @@
         buildColDoms: function() {
             // replicate table header widths
             var that = this,
-                $ths = that._table.find("thead th"),    // get all table headers
+                $ths = that._table.find("thead > tr:first-child > th"),    // get all table headers
                 $th,
                 $cols = [],
                 $col,
