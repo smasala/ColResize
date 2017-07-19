@@ -1,11 +1,11 @@
-/**! ColResize 1.0.5
+/**! ColResize 2.0.0
  * ©2017 Steven Masala
  */
 
 /**
  * @summary ColResize
  * @description Provide the ability to resize the columns in a DataTable
- * @version 1.0.5
+ * @version 2.0.0
  * @file dataTables.colResize.js
  * @author Steven Masala <me@smasala.com>
  * @copyright Copyright 2017 Steven Masala
@@ -68,7 +68,7 @@
          * @property version
          * @type {string} semVer
          */
-        version: "1.0.5",
+        version: "2.0.0",
         /**
          * Default options for extension
          * @property _defaults
@@ -94,6 +94,14 @@
          * @default {null}
          */
         options: null,
+        /**
+         * Wrapper which is created around the <table>
+         * @property _wrapper
+         * @private
+         * @type {jQuery}
+         * @default null 
+         */
+        _wrapper: null,
         /**
          * Current jquery table element
          * @property _table
@@ -199,10 +207,16 @@
          */
         buildDom: function() {
             var that = this;
+            // wrap the table so that the overflow can be controlled when
+            // resizing a big table on a small screen
+            that._table.wrap("<div class='dt-colresizable-table-wrapper'></div>");
+            that._wrapper = that._table.parent();
+
+            // build the column resize container and draggable bars
             that._container = $("<div class='" + that.CLASS_WRAPPER + "'></div>");
-            that._container.css({
-                width: that._table.outerWidth()
-            });
+            that._table.css("width", that._table.width() - 5);
+            that._container.width(that._table.width());
+
             // build and insert columns into container
             that._container.append(that.buildColDoms());
             // cache jQuery columns
@@ -239,6 +253,7 @@
                 $col.data(that.DATA_TAG_ITEM, $th);
                 // set the width on the <th> if it wasn't set inline already <th style="width: {N}px;"></th>
                 $th.css("width", thWidth);
+                $th.css("max-width", thWidth);
                 // register necessary events
                 that.registerEvents($col);
                 // push created drag column element in array
@@ -289,20 +304,43 @@
          */
         onMouseMove: function(event, $col) {
             var that = this,
-                diff = 0;
+                diff = 0,
+                $nextCol,
+                posPlusDiff;
             if (that._isDragging) {
                 // caculate the different between where the mouse has moved to
                 // and the left position of the column that is being dragged
                 diff = (event.clientX - $col.offset().left);
-                // check whether neighbouring is still bigger than 10px if a resize
-                // takes place.
-                if (($col.position().left + diff) < ($col.next().position().left - that.options.minColumnWidth)) {
-                    if (that.updateColumn($col, diff)) {
-                        // col was resized so resize the neighbouring col too.
-                        that.updateColumn($col.next(), diff < 0 ? Math.abs(diff) : -Math.abs(diff), true);
+                $nextCol = $col.next();
+                posPlusDiff = $col.position().left + diff;
+                if ($nextCol.length) {
+                    // check whether neighbouring is still bigger than 10px if a resize
+                    // takes place.
+                    if (posPlusDiff < ($col.next().position().left - that.options.minColumnWidth)) {
+                        if (that.updateColumn($col, diff)) {
+                            // col was resized so resize the neighbouring col too.
+                            that.updateColumn($col.next(), diff < 0 ? Math.abs(diff) : -Math.abs(diff), true);
+                        }
+                    }
+                } else {
+                    // if we are expanding the last column
+                    if(diff > 0) {
+                        // very last col drag bar is being dragged here (expanded)
+                        // if ((posPlusDiff + $col.width()) < that._wrapper.width()) {
+                            that.updateColumn($col, diff);
+                        // }
+                    } else {
+                        // we are shrinking the last column
+                        // don't allow it to shrink smaller than the minColumnWidth
+                        if (posPlusDiff > $col.prev().position().left + that.options.minColumnWidth) {
+                            that.updateColumn($col, diff);
+                            // update the table width with the next size to prevent the other columns
+                            // going crazy
+                            that._table.width( that._table.width() + diff );
+                        }
                     }
                 }
-                that.checkTableHeight()
+                that.checkTableHeight();
             }
         },
         /**

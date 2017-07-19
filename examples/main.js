@@ -3,7 +3,8 @@
     $(document).ready(function() {
         $("table").DataTable({
             colResize: true,
-            autoWidth: false
+            autoWidth: false,
+            scrollX: false
         });
     });
     

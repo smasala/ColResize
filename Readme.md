@@ -22,7 +22,7 @@ Import necessary files:
 ```
 
 ColResize is initialised using the `colResize` option in the DataTables constructor - a simple boolean `true` will enable the feature. Further options can be specified using this option as an object - see the documentation for details.
-`autoWidth` must also be set as `false`.
+`autoWidth` and `scrollX` must also be set as `false`.
 
 Example:
 
@@ -30,7 +30,8 @@ Example:
 $(document).ready( function () {
     $('#myTable').DataTable( {
     	colResize: true,
-        autoWidth: false
+        autoWidth: false,
+        scrollX: false
     } );
 } );
 ```
@@ -42,6 +43,23 @@ $(document).ready( function () {
 }
 ```
 
+# Configuration / options
+
+```js
+$(document).ready( function () {
+    $('#myTable').DataTable( {
+    	colResize: {
+            minColumnWidth: 50
+        },
+        autoWidth: false,
+        scrollX: false
+    } );
+} );
+
+```
+
+Possible Options:
+- `minColumnWidth`: number [default=10]
 
 # Documentation / support
 

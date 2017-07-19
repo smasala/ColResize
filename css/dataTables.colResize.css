@@ -1,12 +1,17 @@
-/**! ColResize 1.0.5
+/**! ColResize 2.0.0
  * ©2017 Steven Masala
  */
+
+.dt-colresizable-table-wrapper {
+    overflow: auto;
+    width: 100%;
+}
 
 .dt-colresizable {
     height: 0;
     width: 100%;
     position: relative;
-    top: 20px;
+    top: 0;
 }
 
 .dt-colresizable .dt-colresizable-col {
@@ -17,13 +22,9 @@
     cursor: ew-resize;
 }
 
-.dt-colresizable .dt-colresizable-col:last-child {
-    pointer-events: none;
-    visibility: hidden;
-}
-
 table.dataTable {
     table-layout: fixed;
+    margin: 0;
 }
 
 table.dataTable thead th,
