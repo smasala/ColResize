@@ -412,7 +412,11 @@
             defaults = DataTable.defaults.colResize;
         if(init !== false) {
             var opts = $.extend({}, init, defaults);
-            new ColResize(settings, opts);
+            // next DOM tick to make sure that
+            // DT really is finished, everytime!
+            setTimeout(function() {
+                new ColResize(settings, opts)
+            }, 0);
         }
     });
     return ColResize;
