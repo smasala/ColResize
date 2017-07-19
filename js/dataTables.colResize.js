@@ -152,6 +152,15 @@
          */
         _tableHeight: 0,
         /**
+         * css class for container which the table is wrapped in.
+         * @private
+         * @property CLASS_TABLE_WRAPPER
+         * @type {string}
+         * @private
+         * @default "dt-colresizable-table-wrapper"
+         */
+        CLASS_TABLE_WRAPPER: "dt-colresizable-table-wrapper",
+        /**
          * css class for draggable container
          * @private
          * @property CLASS_WRAPPER
@@ -209,7 +218,7 @@
             var that = this;
             // wrap the table so that the overflow can be controlled when
             // resizing a big table on a small screen
-            that._table.wrap("<div class='dt-colresizable-table-wrapper'></div>");
+            that._table.wrap("<div class='" + that.CLASS_TABLE_WRAPPER + "'></div>");
             that._wrapper = that._table.parent();
 
             // build the column resize container and draggable bars
