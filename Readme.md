@@ -5,6 +5,14 @@ ColResize adds the ability for the end user to click and drag column headers to 
 # Demo
 [https://smasala.github.io/ColResize/](https://smasala.github.io/ColResize/)
 
+# Compatibility
+
+Tested in:
+ - Chrome 59.0.3071.115
+ - FF 54.0.1
+ - IE 8, 9 (without scrollY + fixed header feature)
+ - IE 10+ (for scrollY + fixed header feature)
+
 # Installation
 
 ## NPM and Bower
@@ -18,6 +26,8 @@ Please see the DataTables [NPM](//datatables.net/download/npm) and [Bower](//dat
 
 Import necessary files:
 ```
+<!DOCTYPE html> <!-- must be set for scrollY + fixed header feature -->
+...
 <script type="text/javascript" src="../js/dataTables.colResize.js"></script>
 <link rel="stylesheet" href="../css/dataTables.colResize.css" />
 ```
@@ -50,7 +60,7 @@ $(document).ready( function () {
 $(document).ready( function () {
     $('#myTable').DataTable( {
     	colResize: {
-            scrollY: 200,
+            scrollY: 200,       //cannot be used with DT scrollY
             minColumnWidth: 50
         },
         autoWidth: false,

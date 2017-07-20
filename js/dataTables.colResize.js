@@ -1,11 +1,11 @@
-/**! ColResize 2.1.0
+/**! ColResize 2.2.0
  * ©2017 Steven Masala
  */
 
 /**
  * @summary ColResize
  * @description Provide the ability to resize the columns in a DataTable
- * @version 2.1.0
+ * @version 2.2.0
  * @file dataTables.colResize.js
  * @author Steven Masala <me@smasala.com>
  * @copyright Copyright 2017 Steven Masala
@@ -68,7 +68,7 @@
          * @property version
          * @type {string} semVer
          */
-        version: "2.1.0",
+        version: "2.2.0",
         /**
          * Default options for extension
          * @property _defaults
@@ -405,16 +405,19 @@
                     if(diff > 0) {
                         // very last col drag bar is being dragged here (expanded)
                         that.updateColumn($col, diff);
+                        // update the table width with the next size to prevent the other columns
+                        // going crazy
+                        that._table.width( that._table.width() + diff );
                     } else {
                         // we are shrinking the very last column
                         // don't allow it to shrink smaller than the minColumnWidth
                         if (posPlusDiff > $col.prev().position().left + that.options.minColumnWidth) {
                             that.updateColumn($col, diff);
+                            // update the table width with the next size to prevent the other columns
+                            // going crazy
+                            that._table.width( that._table.width() + diff );
                         }
                     }
-                    // update the table width with the next size to prevent the other columns
-                    // going crazy
-                    that._table.width( that._table.width() + diff );
                 }
                 that.checkTableHeight();
             }
@@ -502,15 +505,17 @@
             that._scrollWrapper.css("margin-top", that._tableBody.position().top);
             // create an inner div to mimic the height of the tbody content
             that._scrollContent = $("<div class='" + that.CLASS_SCROLLER_CONTENT_WRAPPER + "'></div>");
-            // make the wrapper a little bigger than the table so that the scroll-y bar
-            // doesn't appear inside, overlapping the content
-            that._scrollContent.width(that._wrapper.width() + 20);
             // shrink the wrapper to the defined height so that the scroll bar appears
             that._scrollWrapper.height(that.options.scrollY);
             // fix the content to the tbody original height
             that._scrollContent.height(that._tableBody.height());
             // resize the tbody to the desired height - same as the overlapping wrapper div
             that._tableBody.height(that.options.scrollY);
+
+            // make the wrapper a little bigger than the table so that the scroll-y bar
+            // doesn't appear inside, overlapping the content
+            that._scrollWrapper.width(that._wrapper.width());
+
             // hide the overflowing (y) tbody content
             that._tableBody.css("overflow-y", "hidden");
             // add all the new scroll controlling divs

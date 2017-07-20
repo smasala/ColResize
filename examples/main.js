@@ -6,8 +6,7 @@
                 scrollY: 200
             },
             autoWidth: false,
-            scrollX: false,
-            scrollY: ""
+            scrollX: false
         });
     });
     

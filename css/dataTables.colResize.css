@@ -1,4 +1,4 @@
-/**! ColResize 2.1.0
+/**! ColResize 2.2.0
  * ©2017 Steven Masala
  */
 
@@ -30,7 +30,9 @@
 .dt-colresizable-scroller-wrapper {
     position: fixed;
     overflow-y: auto;
+    overflow-x: hidden; /** FF **/
     transform: translateZ(0);
+    padding-right: 18px;
 }
 
 .dt-colresizable-scroller-content-wrapper {
