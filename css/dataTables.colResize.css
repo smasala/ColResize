@@ -5,11 +5,11 @@
 .dt-colresizable-table-wrapper {
     overflow: auto;
     width: 100%;
+    position: relative;
 }
 
 .dt-colresizable {
     height: 0;
-    width: 100%;
     position: relative;
     top: 0;
 }
@@ -22,19 +22,51 @@
     cursor: ew-resize;
 }
 
+.dt-colresizable-table-wrapper.dt-colresizable-with-scroller {
+    overflow-x: auto;
+    overflow-y: hidden;
+}
+
+.dt-colresizable-scroller-wrapper {
+    position: fixed;
+    overflow-y: auto;
+    transform: translateZ(0);
+}
+
+.dt-colresizable-scroller-content-wrapper {
+    width: 100%;
+    transform: translateX(0);
+}
+
+.dt-colresizable-scroller-content {
+    width: 100%;
+}
+
+.dt-colresizable-with-scroller table thead,
+.dt-colresizable-with-scroller table tbody tr {
+    display: table;
+    table-layout: fixed;
+    width: 100%;    
+}
+
+.dt-colresizable-with-scroller table tbody {
+    overflow-y: auto;
+    display: block;
+}
+
 table.dataTable {
     table-layout: fixed;
     margin: 0;
+}
+
+table.dataTable,
+table.dataTable th,
+table.dataTable td {
+    box-sizing: border-box
 }
 
 table.dataTable thead th,
 table.dataTable tbody td,
 table.dataTable tfoot td {
     overflow: hidden;
-}
-
-table.dataTable thead th,
-table.dataTable tfoot td {
-    padding-left: 0;
-    padding-right: 0;
 }

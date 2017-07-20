@@ -83,7 +83,15 @@
              * @type {integer}
              * @default 20
              */
-            minColumnWidth: 20
+            minColumnWidth: 20,
+            /**
+             * Height of the table body
+             * @property scrollY
+             * @public
+             * @type {integer|string|false}
+             * @default false
+             */
+            scrollY: false
         },
         /**
          * Created during extension init
@@ -111,6 +119,14 @@
          */
         _table: null,
         /**
+         * Current jquery table body element
+         * @property _tableBody
+         * @type {jQuery}
+         * @private
+         * @default {null}
+         */
+        _tableBody: null,
+        /**
          * Datatables instance
          * @property _dtInstance
          * @type {DataTables.Api}
@@ -135,6 +151,9 @@
          * @default null
          */
         _container: null,
+        _scrollWrapper: null,
+        _scrollContentWrapper: null,
+        _scrollContent: null,
         /**
          * Array of all generated draggable columns.
          * @property _columns
@@ -143,6 +162,7 @@
          * @default null
          */
         _columns: null,
+        _updatedColumns: [],
         /**
          * Interval value used to check if the table height has changed.
          * @property _tableHeight
@@ -178,6 +198,10 @@
          * @default "dt-colresizable-col"
          */
         CLASS_COLUMN: "dt-colresizable-col",
+        CLASS_SCROLLER_HASWRAPPER: "dt-colresizable-with-scroller",
+        CLASS_SCROLLER_WRAPPER: "dt-colresizable-scroller-wrapper",
+        CLASS_SCROLLER_CONTENT_WRAPPER: "dt-colresizable-scroller-content-wrapper",
+        CLASS_SCROLLER_CONTENT: "dt-colresizable-scroller-content",
         /**
          * data tag name to save the column width <th>
          * saved on the draggable col <div>
@@ -206,6 +230,7 @@
             var that = this;
             that._dtInstance = dtInstance;
             that._table = $(that._dtInstance.table().node());
+            that._tableBody = that._table.find("tbody");
             that.buildDom();
         },
         /**
@@ -223,6 +248,11 @@
 
             // build the column resize container and draggable bars
             that._container = $("<div class='" + that.CLASS_WRAPPER + "'></div>");
+
+            if (that.options.scrollY) {
+                that.initScroller();
+            }
+
             that._table.css("width", that._table.width() - 5);
             that._container.width(that._table.width());
 
@@ -231,6 +261,7 @@
             // cache jQuery columns
             that._columns = $("." + that.CLASS_COLUMN, that._container);
             that._table.before(that._container);
+
             // add window resize events etc?
         },
         /**
@@ -262,7 +293,6 @@
                 $col.data(that.DATA_TAG_ITEM, $th);
                 // set the width on the <th> if it wasn't set inline already <th style="width: {N}px;"></th>
                 $th.css("width", thWidth);
-                $th.css("max-width", thWidth);
                 // register necessary events
                 that.registerEvents($col);
                 // push created drag column element in array
@@ -335,19 +365,17 @@
                     // if we are expanding the last column
                     if(diff > 0) {
                         // very last col drag bar is being dragged here (expanded)
-                        // if ((posPlusDiff + $col.width()) < that._wrapper.width()) {
-                            that.updateColumn($col, diff);
-                        // }
+                        that.updateColumn($col, diff);
                     } else {
-                        // we are shrinking the last column
+                        // we are shrinking the very last column
                         // don't allow it to shrink smaller than the minColumnWidth
                         if (posPlusDiff > $col.prev().position().left + that.options.minColumnWidth) {
                             that.updateColumn($col, diff);
-                            // update the table width with the next size to prevent the other columns
-                            // going crazy
-                            that._table.width( that._table.width() + diff );
                         }
                     }
+                    // update the table width with the next size to prevent the other columns
+                    // going crazy
+                    that._table.width( that._table.width() + diff );
                 }
                 that.checkTableHeight();
             }
@@ -379,6 +407,9 @@
                 });
                 // save the new width for the next mouse drag call
                 $col.data(that.DATA_TAG_WIDTH, newWidth);
+                if (that.options.scrollY) {
+                    that.updateCells($col.index(), newWidth);
+                }
                 return true;
             }
             return false;
@@ -398,6 +429,88 @@
                 that._columns.css("height", newHeight);
             }
 
+        },
+
+        initScroller: function() {
+            var that = this;
+            // Build required DOM elements.
+            that.buildScrollerDom();
+            // register when a scroll is performed inside the wrapping div
+            // this then forces the tbody to scroll in-sync.
+            that._scrollWrapper.on("scroll", that.onScroll());
+            that._table.on("draw.dt", function() {
+                that.syncRows();
+            });
+        },
+
+        buildScrollerDom: function() {
+            var that = this;
+            // add class to wrapper for better css conditional selection
+            that._wrapper.addClass(that.CLASS_SCROLLER_HASWRAPPER);
+            // scroll wrapper container - where the scroll-y bar appears
+            that._scrollWrapper = $("<div class='" + that.CLASS_SCROLLER_WRAPPER + "'></div>");
+            // move it over the tbody content
+            that._scrollWrapper.css("margin-top", that._tableBody.position().top);
+            // create an inner div to mimic the height of the tbody content
+            that._scrollContentWrapper = $("<div class='" + that.CLASS_SCROLLER_CONTENT_WRAPPER + "'></div>");
+            // set the full height
+            that._scrollContentWrapper.height(that._wrapper.height());
+            // make the wrapper a little bigger than the table so that the scroll-y bar
+            // doesn't appear inside, overlapping the content
+            that._scrollContentWrapper.width(that._wrapper.width() + 20);
+            // this div will mimic the original height of the table contents and cause
+            // the CONTENT_WRAPPER to show the scroll-y bar
+            that._scrollContent = $("<div class='" + that.CLASS_SCROLLER_CONTENT + "'></div>");
+            // shrink the wrapper to the defined height so that the scroll bar appears
+            that._scrollWrapper.height(that.options.scrollY);
+            // fix the content to the tbody original height
+            that._scrollContent.height(that._tableBody.height());
+            // resize the tbody to the desired height - same as the overlapping wrapper div
+            that._tableBody.height(that.options.scrollY);
+            // hide the overflowing (y) tbody content
+            that._tableBody.css("overflow-y", "hidden");
+
+            // add all the new scroll controlling divs
+            that._scrollContentWrapper.append(that._scrollContent);
+            that._scrollWrapper.append(that._scrollContentWrapper);
+            that._wrapper.prepend(that._scrollWrapper);
+        },
+
+        onScroll: function() {
+            var that = this,
+                scrollWrapper = that._scrollWrapper;
+            return function() {
+                that._tableBody.scrollTop(scrollWrapper.scrollTop());
+            }
+        },
+
+        updateCells: function(index, width) {
+            var that = this,
+                $trs = that._tableBody.find("tr");
+            for (var i = 0, l = $trs.length; i < l; i++) {
+                $trs.eq(i).find("td").eq(index).css("width", width);
+            }
+            if(that._updatedColumns.indexOf(index) < 0) {
+                that._updatedColumns.push(index);
+            }
+        },
+
+        syncRows: function() {
+            var that = this,
+                $ths,
+                $trs,
+                index;
+            console.info("syncRows");
+            if (that._updatedColumns.length) {
+                $ths = that._table.find("thead th");
+                $trs = that._tableBody.find("tr");
+                for(var i = 0, l = $trs.length; i < l; i++) {
+                    for(var ii = 0, ll = that._updatedColumns.length; ii < ll; ii++) {
+                        index = that._updatedColumns[ii];
+                        $trs.eq(i).find("td").eq(index).css("width", $ths.eq(index).css("width"));
+                    }
+                }
+            }
         }
     });
 
@@ -415,7 +528,7 @@
             // next DOM tick to make sure that
             // DT really is finished, everytime!
             setTimeout(function() {
-                new ColResize(settings, opts)
+                new ColResize(settings, opts);
             }, 0);
         }
     });

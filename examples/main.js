@@ -2,9 +2,12 @@
 
     $(document).ready(function() {
         $("table").DataTable({
-            colResize: true,
+            colResize: {
+                scrollY: 200
+            },
             autoWidth: false,
-            scrollX: false
+            scrollX: false,
+            scrollY: ""
         });
     });
     
