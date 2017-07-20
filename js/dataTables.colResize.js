@@ -175,6 +175,16 @@
          * @default null
          */
         _columns: null,
+        /**
+         * Array of index numbers of the columns which have been updated
+         * this is an internal cache which is used to only update the widths
+         * of the <td> element in columns that were changed by the user,
+         * for example on page change.
+         * @property _updatedColumns
+         * @type {interger[]}
+         * @private
+         * @default []
+         */
         _updatedColumns: [],
         /**
          * Interval value used to check if the table height has changed.
@@ -488,6 +498,9 @@
             that._table.on("draw.dt", function() {
                 that.syncRows();
                 that.syncHeight();
+            });
+            $(window).resize(function() {
+                that._scrollWrapper.width(that._wrapper.width());
             });
         },
         /**
