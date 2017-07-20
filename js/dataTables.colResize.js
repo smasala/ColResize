@@ -211,10 +211,33 @@
          * @default "dt-colresizable-col"
          */
         CLASS_COLUMN: "dt-colresizable-col",
+        /**
+         * css class for css conditional scroller identifier
+         * @private
+         * @property CLASS_SCROLLER_HASWRAPPER
+         * @type {string}
+         * @private
+         * @default "dt-colresizable-with-scroller"
+         */
         CLASS_SCROLLER_HASWRAPPER: "dt-colresizable-with-scroller",
+        /**
+         * css class for scroller wrapper div
+         * @private
+         * @property CLASS_SCROLLER_WRAPPER
+         * @type {string}
+         * @private
+         * @default "dt-colresizable-scroller-wrapper"
+         */
         CLASS_SCROLLER_WRAPPER: "dt-colresizable-scroller-wrapper",
+        /**
+         * css class for scroller content mimic div
+         * @private
+         * @property CLASS_SCROLLER_CONTENT_WRAPPER
+         * @type {string}
+         * @private
+         * @default "dt-colresizable-scroller-content-wrapper"
+         */
         CLASS_SCROLLER_CONTENT_WRAPPER: "dt-colresizable-scroller-content-wrapper",
-        CLASS_SCROLLER_CONTENT: "dt-colresizable-scroller-content",
         /**
          * data tag name to save the column width <th>
          * saved on the draggable col <div>
