@@ -1,8 +1,9 @@
 # ColResize
 
-**Not an official extension!**
-
 ColResize adds the ability for the end user to click and drag column headers to resize a table as they see fit, to DataTables.
+
+# Demo
+[https://smasala.github.io/ColResize/](https://smasala.github.io/ColResize/)
 
 # Installation
 
