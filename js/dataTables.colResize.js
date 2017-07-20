@@ -151,8 +151,21 @@
          * @default null
          */
         _container: null,
+        /**
+         * Scroller Wrapper div used to show y scroll bar
+         * @property _scrollWrapper
+         * @type {jQuery}
+         * @private
+         * @default null
+         */
         _scrollWrapper: null,
-        _scrollContentWrapper: null,
+        /**
+         * Mimics the tbody height
+         * @property _scrollContent
+         * @type {jQuery}
+         * @private
+         * @default null
+         */
         _scrollContent: null,
         /**
          * Array of all generated draggable columns.
@@ -262,6 +275,9 @@
             that._columns = $("." + that.CLASS_COLUMN, that._container);
             that._table.before(that._container);
 
+            that._table.on("draw.dt", function() {
+                that.checkTableHeight();
+            });
             // add window resize events etc?
         },
         /**
@@ -431,6 +447,11 @@
 
         },
 
+        /**
+         * Initialise the vertical scrolling feature (scrollY)
+         * @method initScroller
+         * @returns null
+         */
         initScroller: function() {
             var that = this;
             // Build required DOM elements.
@@ -440,9 +461,14 @@
             that._scrollWrapper.on("scroll", that.onScroll());
             that._table.on("draw.dt", function() {
                 that.syncRows();
+                that.syncHeight();
             });
         },
-
+        /**
+         * Builds the required dom elements together for vertical scrolling 
+         * @method buildScrollerDom
+         * @returns null
+         */
         buildScrollerDom: function() {
             var that = this;
             // add class to wrapper for better css conditional selection
@@ -452,15 +478,10 @@
             // move it over the tbody content
             that._scrollWrapper.css("margin-top", that._tableBody.position().top);
             // create an inner div to mimic the height of the tbody content
-            that._scrollContentWrapper = $("<div class='" + that.CLASS_SCROLLER_CONTENT_WRAPPER + "'></div>");
-            // set the full height
-            that._scrollContentWrapper.height(that._wrapper.height());
+            that._scrollContent = $("<div class='" + that.CLASS_SCROLLER_CONTENT_WRAPPER + "'></div>");
             // make the wrapper a little bigger than the table so that the scroll-y bar
             // doesn't appear inside, overlapping the content
-            that._scrollContentWrapper.width(that._wrapper.width() + 20);
-            // this div will mimic the original height of the table contents and cause
-            // the CONTENT_WRAPPER to show the scroll-y bar
-            that._scrollContent = $("<div class='" + that.CLASS_SCROLLER_CONTENT + "'></div>");
+            that._scrollContent.width(that._wrapper.width() + 20);
             // shrink the wrapper to the defined height so that the scroll bar appears
             that._scrollWrapper.height(that.options.scrollY);
             // fix the content to the tbody original height
@@ -469,21 +490,30 @@
             that._tableBody.height(that.options.scrollY);
             // hide the overflowing (y) tbody content
             that._tableBody.css("overflow-y", "hidden");
-
             // add all the new scroll controlling divs
-            that._scrollContentWrapper.append(that._scrollContent);
-            that._scrollWrapper.append(that._scrollContentWrapper);
+            that._scrollWrapper.append(that._scrollContent);
             that._wrapper.prepend(that._scrollWrapper);
         },
-
+        /**
+         * Event listener function for the scroll wrapper scrolling events
+         * @method onScroll
+         * @returns {function}
+         */
         onScroll: function() {
             var that = this,
                 scrollWrapper = that._scrollWrapper;
             return function() {
+                // scroll the tbody accordingly
+                // i.e. keep the tbody scroll in-sync with the scrolling wrapper
                 that._tableBody.scrollTop(scrollWrapper.scrollTop());
-            }
+            };
         },
-
+        /**
+         * Update the cells within this column to align with the header on column resize.
+         * @method updateCells
+         * @param {integer} index column index which was changed
+         * @param {interger} width the new width of the column in pixels
+         */
         updateCells: function(index, width) {
             var that = this,
                 $trs = that._tableBody.find("tr");
@@ -494,13 +524,18 @@
                 that._updatedColumns.push(index);
             }
         },
-
+        /**
+         * After a pagination DataTables draws the cells new,
+         * this function adjusts the cells back to the correct width
+         * in sync with the headers
+         * @method syncRows
+         * @returns null
+         */
         syncRows: function() {
             var that = this,
                 $ths,
                 $trs,
                 index;
-            console.info("syncRows");
             if (that._updatedColumns.length) {
                 $ths = that._table.find("thead th");
                 $trs = that._tableBody.find("tr");
@@ -511,6 +546,24 @@
                     }
                 }
             }
+        },
+        /**
+         * After a draw (like page change), the content height might not be longer
+         * than the set scrollY value. Therefore the Y scroll bar might not be needed.
+         * Update the content height accordingly to show or hide the scroll bar.
+         * @method syncHeight
+         * @returns null
+         */
+        syncHeight: function() {
+            var that = this,
+                // make the tbody full height (auto) again to get the new content height
+                height = that._tableBody.css("height", "auto").height();
+            // reset the tbody height back after calculation
+            that._tableBody.height(that.options.scrollY);
+            // adjust scroll content div to the new table height
+            // this is needed if the content of the next page for example doesn't fill the entire height
+            // but the scroll bar is still visible
+            that._scrollContent.height(height);
         }
     });
 
