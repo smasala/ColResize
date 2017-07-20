@@ -49,6 +49,7 @@ $(document).ready( function () {
 $(document).ready( function () {
     $('#myTable').DataTable( {
     	colResize: {
+            scrollY: 200,
             minColumnWidth: 50
         },
         autoWidth: false,
@@ -60,6 +61,7 @@ $(document).ready( function () {
 
 Possible Options:
 - `minColumnWidth`: number [default=10]
+- `scrollY`: number [optional] much like the DT [scrollY](https://datatables.net/reference/option/scrollY). Sets a fixed header and `tbody` height with scroll functionality.
 
 # Documentation / support
 
