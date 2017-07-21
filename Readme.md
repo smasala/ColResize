@@ -76,5 +76,4 @@ Possible Options:
 
 # Documentation / support
 
-* [Documentation](https://datatables.net/extensions/colreorder/)
 * [DataTables support forums](http://datatables.net/forums)
