@@ -333,7 +333,7 @@
                 $col = $("<div class='" + that.CLASS_COLUMN + "'></div>"); // create drag column item <div>
                 // place the drag column at the end of the <th> and as tall as the table itself
                 $col.css({
-                    left: $th.position().left + thWidth,
+                    left: Math.ceil($th.position().left + thWidth),
                     height: that._tableHeight
                 });
                 // save the current width
@@ -396,11 +396,11 @@
                 $nextCol,
                 posPlusDiff;
             if (that._isDragging) {
-                // caculate the different between where the mouse has moved to
+                // caculate the difference between where the mouse has moved to
                 // and the left position of the column that is being dragged
-                diff = (event.clientX - $col.offset().left);
+                diff = Math.ceil((event.clientX - $col.offset().left));
                 $nextCol = $col.next();
-                posPlusDiff = $col.position().left + diff;
+                posPlusDiff = Math.ceil($col.position().left + diff);
                 if ($nextCol.length) {
                     // check whether neighbouring is still bigger than 10px if a resize
                     // takes place.
@@ -414,18 +414,20 @@
                     // if we are expanding the last column
                     if(diff > 0) {
                         // very last col drag bar is being dragged here (expanded)
-                        that.updateColumn($col, diff);
-                        // update the table width with the next size to prevent the other columns
-                        // going crazy
-                        that._table.width( that._table.width() + diff );
+                        if(that.updateColumn($col, diff)) {
+                            // update the table width with the next size to prevent the other columns
+                            // going crazy
+                            that._table.width( $col.position().left );
+                        }
                     } else {
                         // we are shrinking the very last column
                         // don't allow it to shrink smaller than the minColumnWidth
                         if (posPlusDiff > $col.prev().position().left + that.options.minColumnWidth) {
-                            that.updateColumn($col, diff);
-                            // update the table width with the next size to prevent the other columns
-                            // going crazy
-                            that._table.width( that._table.width() + diff );
+                            if(that.updateColumn($col, diff)) {
+                                // update the table width with the next size to prevent the other columns
+                                // going crazy
+                                that._table.width( Math.ceil($col.position().left) );
+                            }
                         }
                     }
                 }
@@ -444,13 +446,13 @@
         updateColumn: function($col, by, nextColumn) {
             var that = this,
                 // calculate the new width of the column
-                newWidth = by + $col.data(that.DATA_TAG_WIDTH);
+                newWidth = Math.ceil(by + $col.data(that.DATA_TAG_WIDTH));
             //only resize to a min of 10px
             if (newWidth > that.options.minColumnWidth) {
                 if(!nextColumn) {
                     // set the new let position of the dragged column (div)
                     $col.css({
-                        left: by + $col.position().left
+                        left: Math.ceil(by + $col.position().left)
                     });
                 }
                 // get the actual <th> column of the table and set the new width
