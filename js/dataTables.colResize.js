@@ -398,16 +398,16 @@
             if (that._isDragging) {
                 // caculate the difference between where the mouse has moved to
                 // and the left position of the column that is being dragged
-                diff = Math.ceil((event.clientX - $col.offset().left));
+                diff = Math.ceil(event.clientX - $col.offset().left);
                 $nextCol = $col.next();
                 posPlusDiff = Math.ceil($col.position().left + diff);
                 if ($nextCol.length) {
                     // check whether neighbouring is still bigger than 10px if a resize
                     // takes place.
-                    if (posPlusDiff < ($col.next().position().left - that.options.minColumnWidth)) {
+                    if (posPlusDiff < ($nextCol.position().left - that.options.minColumnWidth)) {
                         if (that.updateColumn($col, diff)) {
                             // col was resized so resize the neighbouring col too.
-                            that.updateColumn($col.next(), diff < 0 ? Math.abs(diff) : -Math.abs(diff), true);
+                            that.updateColumn($nextCol, diff < 0 ? Math.abs(diff) : -Math.abs(diff), true);
                         }
                     }
                 } else {

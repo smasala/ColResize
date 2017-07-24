@@ -71,7 +71,7 @@ $(document).ready( function () {
 ```
 
 Possible Options:
-- `minColumnWidth`: number [default=10]
+- `minColumnWidth`: number [default=10] must be equal too or greater than the sum of the cell's padding (left + right)
 - `scrollY`: number [optional] much like the DT [scrollY](https://datatables.net/reference/option/scrollY). Sets a fixed header and `tbody` height with scroll functionality. Cannot be used with DT `scrollY` option.
 
 # Documentation / support
