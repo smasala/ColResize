@@ -52,13 +52,13 @@
         var dtInstance = new DataTable.Api( dt ),
             settings = dtInstance.settings()[0];
 
-        if (settings.colresize) {
+        if (settings.colResize) {
             // already exists on this instance
             return;
         }
         this.options = $.extend(true, {}, this._defaults, userOptions);
         this.init(dtInstance);
-        settings.colresize = this;
+        settings.colResize = this;
     };
 
     $.extend( ColResize.prototype, {
@@ -286,20 +286,25 @@
          * @returns null
          */
         buildDom: function() {
-            var that = this;
+            var that = this,
+                redraw = !!(that._wrapper);
             // wrap the table so that the overflow can be controlled when
             // resizing a big table on a small screen
-            that._table.wrap("<div class='" + that.CLASS_TABLE_WRAPPER + "'></div>");
-            that._wrapper = that._table.parent();
+            if (!redraw) {
+                // wrapper check is needed for "redraw()", since this is left over and
+                // the table shouldn't be "re-wrapped"
+                that._table.wrap("<div class='" + that.CLASS_TABLE_WRAPPER + "'></div>");
+                that._wrapper = that._table.parent();
+            } 
 
             // build the column resize container and draggable bars
             that._container = $("<div class='" + that.CLASS_WRAPPER + "'></div>");
 
-            if (that.options.scrollY) {
+            if (!redraw && that.options.scrollY) {
                 that.initScroller();
             }
 
-            that._table.css("width", that._table.width() - 5);
+            that._table.css("width", that._table.width() - (!redraw ? 5 : 0));
             that._container.width(that._table.width());
 
             // build and insert columns into container
@@ -607,6 +612,25 @@
             // this is needed if the content of the next page for example doesn't fill the entire height
             // but the scroll bar is still visible
             that._scrollContent.height(height);
+        },
+        /**
+         * @method clearCache
+         * @returns null
+         */
+        clearCache: function() {
+            var that = this;
+            that._columns = [];
+            that._updatedColumns = [];
+        },
+        /**
+         * @method redraw
+         * @returns null
+         */
+        redraw: function() {
+            var that = this;
+            that._container.remove();
+            that.clearCache();
+            that.init(that._dtInstance);
         }
     });
 
@@ -628,5 +652,12 @@
             }, 0);
         }
     });
+
+    // API augmentation
+    $.fn.dataTable.Api.register( "colResize.redraw()", function () {
+        this.context[0].colResize.redraw();
+        return this;
+    } );
+
     return ColResize;
 }));

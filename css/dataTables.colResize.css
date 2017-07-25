@@ -12,6 +12,7 @@
     height: 0;
     position: relative;
     top: 0;
+    z-index: 999;
 }
 
 .dt-colresizable .dt-colresizable-col {
@@ -20,6 +21,7 @@
     box-sizing: border-box;
     width: 5px;
     cursor: ew-resize;
+    z-index: 1000;
 }
 
 .dt-colresizable-table-wrapper.dt-colresizable-with-scroller {
