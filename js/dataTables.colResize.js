@@ -324,7 +324,10 @@
             that._table.before(that._container);
 
             that._table.on("draw.dt", function() {
-                that.checkTableHeight();
+                // set timeout so that table dom manipulation can be done first
+                setTimeout(function() {
+                    that.checkTableHeight();
+                }, 0);
             });
             // add window resize events etc?
         },
@@ -512,8 +515,11 @@
             // this then forces the tbody to scroll in-sync.
             that._scrollWrapper.on("scroll", that.onScroll());
             that._table.on("draw.dt", function() {
-                that.syncRows();
-                that.syncHeight();
+                // set timeout so that table dom manipulation can be done first
+                setTimeout(function() {
+                    that.syncRows();
+                    that.syncHeight();
+                }, 0);
             });
             $(window).resize(function() {
                 that._scrollWrapper.width(that._wrapper.width());
