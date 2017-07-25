@@ -269,6 +269,16 @@
          */
         DATA_TAG_ITEM: "dt-colresizable-item",
         /**
+         * data tag name to save the previous draggable column
+         * element
+         * @private
+         * @property DATA_TAG_PREV_COL
+         * @type {string}
+         * @private
+         * @default "dt-prev-col-item"
+         */
+        DATA_TAG_PREV_COL: "dt-prev-col-item",
+        /**
          * @method init
          * @param {object} dtInstance
          */
@@ -341,6 +351,8 @@
                     left: Math.ceil($th.position().left + thWidth),
                     height: that._tableHeight
                 });
+                // save the prev col item for speed rather than using the .prev() function
+                $col.data(that.DATA_TAG_PREV_COL, $cols[ i - 1 ]);
                 // save the current width
                 $col.data(that.DATA_TAG_WIDTH, thWidth);
                 // save the <th> element reference for easy access later
@@ -417,27 +429,24 @@
                     }
                 } else {
                     // if we are expanding the last column
-                    if(diff > 0) {
+                    // or when shrinking: don't allow it to shrink smaller than the minColumnWidth
+                    if(diff > 0 || (posPlusDiff > $col.prev().position().left + that.options.minColumnWidth) ) {
                         // very last col drag bar is being dragged here (expanded)
                         if(that.updateColumn($col, diff)) {
-                            // update the table width with the next size to prevent the other columns
-                            // going crazy
-                            that._table.width( $col.position().left );
-                        }
-                    } else {
-                        // we are shrinking the very last column
-                        // don't allow it to shrink smaller than the minColumnWidth
-                        if (posPlusDiff > $col.prev().position().left + that.options.minColumnWidth) {
-                            if(that.updateColumn($col, diff)) {
-                                // update the table width with the next size to prevent the other columns
-                                // going crazy
-                                that._table.width( Math.ceil($col.position().left) );
-                            }
+                            that.updateTableOnLastColumnMove($col, diff);
                         }
                     }
                 }
                 that.checkTableHeight();
             }
+        },
+        updateTableOnLastColumnMove: function($col, diff) {
+            // update the table width with the next size to prevent the other columns
+            // going crazy
+            $col.css({
+                left: Math.ceil($col.position().left + diff)
+            });
+            this._table.width( Math.ceil($col.position().left) );
         },
         /**
          * Update the column width by a given number
@@ -454,18 +463,18 @@
                 newWidth = Math.ceil(by + $col.data(that.DATA_TAG_WIDTH));
             //only resize to a min of 10px
             if (newWidth > that.options.minColumnWidth) {
-                if(!nextColumn) {
-                    // set the new let position of the dragged column (div)
-                    $col.css({
-                        left: Math.ceil(by + $col.position().left)
-                    });
-                }
                 // get the actual <th> column of the table and set the new width
                 $col.data(that.DATA_TAG_ITEM).css({
                     width: newWidth
                 });
                 // save the new width for the next mouse drag call
                 $col.data(that.DATA_TAG_WIDTH, newWidth);
+                if(nextColumn) {
+                    // set the new let position of the dragged column (div)
+                    $col.data(that.DATA_TAG_PREV_COL).css({
+                        left: Math.ceil($col.data(that.DATA_TAG_ITEM).position().left)
+                    });
+                }
                 if (that.options.scrollY) {
                     that.updateCells($col.index(), newWidth);
                 }
