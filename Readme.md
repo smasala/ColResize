@@ -85,7 +85,7 @@ var dtInstance = $(table).DataTable({... colResize: true ...});
 dtInstance.colResize.redraw();
 ```
 
-Possible Options:
+Available functions:
 - `redraw()`: forces a complete redraw of the draggable bars etc by destroying the current DOM elements and recreating them
 - `visible(columnIndex, visibilityBoolean, redrawCalculationsBoolean)`: when using the ColResize extension, the standard column visibility function should be avoided because the events are too late for ColResize to use. Use this visible function instead. [Original docs for more info](https://datatables.net/reference/api/column().visible()).
 
