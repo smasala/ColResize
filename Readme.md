@@ -90,6 +90,20 @@ Available functions:
 - `visible(columnIndex, visibilityBoolean, redrawCalculationsBoolean)`: when using the ColResize extension, the standard column visibility function should be avoided because the events are too late for ColResize to use. Use this visible function instead. [Original docs for more info](https://datatables.net/reference/api/column().visible()).
 
 
+# events
+
+Events can be caught on the DataTable instance object
+
+```js
+var dtInstance = $(table).DataTable({... colResize: true ...});
+dtInstance.on("column-resized.dt" function(event, columnIndex, newColumnWidth) {
+    // do something  
+});
+```
+
+Possible events:
+- `column-resized.dt` arguments: (jQuery Event Object, columnIndex [integer], newColumnWidth [integer]) - fired after a drag event on mouse up.
+
 # Documentation / support
 
 * [DataTables support forums](http://datatables.net/forums)
