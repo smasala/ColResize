@@ -127,6 +127,14 @@
          */
         _tableBody: null,
         /**
+         * Current jquery "th" elements
+         * @property _tableHeaders
+         * @type {jQuery}
+         * @private
+         * @default null
+         */
+        _tableHeaders: null,
+        /**
          * Datatables instance
          * @property _dtInstance
          * @type {DataTables.Api}
@@ -299,6 +307,7 @@
             that._dtInstance = dtInstance;
             that._table = $(that._dtInstance.table().node());
             that._tableBody = that._table.find("tbody");
+            that._tableHeaders = that._table.find("thead > tr:first-child > th");
             that.buildDom();
             that._addEvent(that._table, "destroy.dt", function() {
                 that.destroy();
@@ -328,15 +337,22 @@
             if (!redraw && that.options.scrollY) {
                 that.initScroller();
             }
-
-            that._table.css("width", that._table.width() - (!redraw ? 5 : 0));
-            that._container.width(that._table.width());
-
+            // set the table dimensions correctly
+            that.initTableDimensions();
             // build and insert columns into container
             that._container.append(that.buildColDoms());
             // cache jQuery columns
             that._columns = $("." + that.CLASS_COLUMN, that._container);
             that._table.before(that._container);
+            that.initEvents();
+        },
+        /**
+         * Register all events needed on ColResize init
+         * @method initEvents
+         * @returns null
+         */
+        initEvents: function() {
+            var that = this;
             that._addEvent(that._table, "draw.dt", function() {
                 // set timeout so that table dom manipulation can be done first
                 setTimeout(function() {
@@ -351,6 +367,30 @@
             }, true);
         },
         /**
+         * Initialises the table width and height
+         * @method initTableDimensions
+         * @returns null
+         */
+        initTableDimensions: function() {
+            var that = this,
+                $th,
+                thWidth = 0,
+                $ths = that._tableHeaders,    // get all table headers
+                totalWidth = 0;
+            for (var i = 0, l = $ths.length; i < l; i++) {
+                $th = $($ths[i]);   // get individual <th>
+                thWidth = that._getWidth($th); // get <th> current/correct width
+                $th.css("width", thWidth);
+                totalWidth += thWidth;
+            }
+            // set the table width correctly
+            that._table.css("width", totalWidth);
+            // and it's container
+            that._container.width(totalWidth);
+            
+            that._tableHeight = that._table.outerHeight();    // get table height
+        },
+        /**
          * Creates the draggable columns, add the necessary drag events 
          * @method buildColDoms
          * @return jQuery[] actual draggable columns as jquery objects
@@ -358,12 +398,12 @@
         buildColDoms: function() {
             // replicate table header widths
             var that = this,
-                $ths = that._table.find("thead > tr:first-child > th"),    // get all table headers
+                $ths = that._tableHeaders,    // get all table headers
                 $th,
                 $cols = [],
                 $col,
                 thWidth = 0;
-            that._tableHeight = that._table.outerHeight();    // get table height
+            
             for (var i = 0, l = $ths.length; i < l; i++) {
                 $th = $($ths[i]);   // get individual <th>
                 thWidth = $th.outerWidth(); // get <th> current width
@@ -379,14 +419,32 @@
                 $col.data(that.DATA_TAG_WIDTH, thWidth);
                 // save the <th> element reference for easy access later
                 $col.data(that.DATA_TAG_ITEM, $th);
-                // set the width on the <th> if it wasn't set inline already <th style="width: {N}px;"></th>
-                $th.css("width", thWidth);
                 // register necessary events
                 that.registerEvents($col);
                 // push created drag column element in array
                 $cols.push($col);
             }
             return $cols;
+        },
+        /**
+         * Get the current or correct th element width.
+         * If the th element has an inline width set "style='width: 100px'" then this
+         * the return value. If it doesn't, then the calculated "outerWidth()" is returned.
+         * 
+         * minColumnWidth value always wins if greater than the calculated width.
+         * @method _getWidth
+         * @param $th {jQuery} th jquery element
+         * @returns {integer|float}
+         */
+        _getWidth: function($th) {
+            var that = this,
+                width;
+            if (typeof $th[0].style.width === "string" && $th[0].style.width.indexOf("px") >= 1) {
+                width = parseFloat($th[0].style.width);
+            } else {
+                width = $th.outerWidth();
+            }
+            return width < that.options.minColumnWidth ? that.options.minColumnWidth : width;
         },
         /**
          * Registers the required drag events on the specified column.
