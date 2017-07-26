@@ -476,6 +476,7 @@
                     that._isDragging = false;
                     // remove the drag (mousemove) event listener
                     $(document).off("mousemove", mouseMoveFunc);
+                    $(that._table).trigger($.Event( "column-resized.dt" ), [$col.index(), $col.data(that.DATA_TAG_ITEM).outerWidth()] );
                 }).on("mousemove", mouseMoveFunc);  //on mousemove
                 return false;   // stop text highlighting
             };
