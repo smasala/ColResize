@@ -77,6 +77,19 @@ Possible Options:
 - `minColumnWidth`: number [default=10] must be equal too or greater than the sum of the cell's padding (left + right)
 - `scrollY`: number [optional] much like the DT [scrollY](https://datatables.net/reference/option/scrollY). Sets a fixed header and `tbody` height with scroll functionality. Cannot be used with DT `scrollY` option.
 
+# API
+
+This extension also has a few extra api functions which can be called by using the created DataTables instance.
+```js
+var dtInstance = $(table).DataTable({... colResize: true ...});
+dtInstance.colResize.redraw();
+```
+
+Possible Options:
+- `redraw()`: forces a complete redraw of the draggable bars etc by destroying the current DOM elements and recreating them
+- `visible(columnIndex, visibilityBoolean, redrawCalculationsBoolean)`: when using the ColResize extension, the standard column visibility function should be avoided because the events are too late for ColResize to use. Use this visible function instead. [Original docs for more info](https://datatables.net/reference/api/column().visible()).
+
+
 # Documentation / support
 
 * [DataTables support forums](http://datatables.net/forums)
