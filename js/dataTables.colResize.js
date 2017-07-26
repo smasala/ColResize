@@ -344,6 +344,7 @@
             // cache jQuery columns
             that._columns = $("." + that.CLASS_COLUMN, that._container);
             that._table.before(that._container);
+            that.checkTableHeight();
             that.initEvents();
         },
         /**
@@ -387,8 +388,6 @@
             that._table.css("width", totalWidth);
             // and it's container
             that._container.width(totalWidth);
-            
-            that._tableHeight = that._table.outerHeight();    // get table height
         },
         /**
          * Creates the draggable columns, add the necessary drag events 
@@ -410,8 +409,7 @@
                 $col = $("<div class='" + that.CLASS_COLUMN + "'></div>"); // create drag column item <div>
                 // place the drag column at the end of the <th> and as tall as the table itself
                 $col.css({
-                    left: Math.ceil($th.position().left + thWidth),
-                    height: that._tableHeight
+                    left: Math.ceil($th.position().left + thWidth)
                 });
                 // save the prev col item for speed rather than using the .prev() function
                 $col.data(that.DATA_TAG_PREV_COL, $cols[ i - 1 ]);
@@ -572,14 +570,25 @@
          */
         checkTableHeight: function() {
             var that = this,
+                topMarg = 0,
                 newHeight = that._table.outerHeight();
             if (newHeight !== that._tableHeight) {
-                that._tableHeight = that._table.outerHeight();
-                that._columns.css("height", newHeight);
+                that._tableHeight = newHeight;
+                // convert the "px" value to just a number
+                topMarg = parseFloat(that._table.css("margin-top"));
+                // if the table is empty, then don't show the column bars inside the tbody
+                // as they overlap the empty text which has colspan across the table.
+                if (that._tableBody.find("td.dataTables_empty").length) {
+                    newHeight = (newHeight - (newHeight - that._tableBody.position().top)) - topMarg ;
+                }
+                //set the the position and height of all the draggable columns
+                that._columns.css({
+                    height: newHeight,
+                    top: topMarg
+                });
             }
 
         },
-
         /**
          * Initialise the vertical scrolling feature (scrollY)
          * @method initScroller
