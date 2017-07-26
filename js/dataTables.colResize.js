@@ -346,6 +346,9 @@
             that._addEvent(that._dtInstance, "column-reorder", function() {
                 that.redraw();
             }, true);
+            that._addEvent(that._table, "column-visibility.dt", function() {
+                that.redraw();
+            }, true);
         },
         /**
          * Creates the draggable columns, add the necessary drag events 
@@ -696,6 +699,24 @@
             var that = this;
             that.destroy();
             that.init(that._dtInstance);
+        },
+        /**
+         * To be called instead of standard "dtInstance.column(index).visible()"
+         * so that the table widths and draggable bar items can be redrawn.
+         * @method visibility
+         * @param index {integer} column index to change
+         * @param visibility {boolean} set the column to visible or not
+         * @returns null
+         */
+        visibility: function(index, visibility, redrawCalc) {
+            var that = this,
+                width = $(that._dtInstance.settings()[0].aoColumns[index].nTh).outerWidth();
+            if (!visibility) {
+                that._table.css("width", that._table.width() - width);
+            } else {
+                that._table.css("width", that._table.width() + width);
+            }
+            that._dtInstance.column(index).visible(visibility, redrawCalc);
         }
     });
 
@@ -721,6 +742,11 @@
     // API augmentation
     $.fn.dataTable.Api.register( "colResize.redraw()", function () {
         this.context[0].colResize.redraw();
+        return this;
+    } );
+
+    $.fn.dataTable.Api.register( "colResize.visible()", function (index, visibility, redrawCalc) {
+        this.context[0].colResize.visibility(index, visibility, redrawCalc);
         return this;
     } );
 
