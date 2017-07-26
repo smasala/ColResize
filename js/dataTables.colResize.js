@@ -300,9 +300,9 @@
             that._table = $(that._dtInstance.table().node());
             that._tableBody = that._table.find("tbody");
             that.buildDom();
-            that._table.one("destroy.dt", function() {
+            that._addEvent(that._table, "destroy.dt", function() {
                 that.destroy();
-            });
+            }, true);
         },
         /**
          * Builds the draggable components together and places
@@ -343,9 +343,9 @@
                     that.checkTableHeight();
                 }, 0);
             });
-            that._dtInstance.one("column-reorder", function() {
+            that._addEvent(that._dtInstance, "column-reorder", function() {
                 that.redraw();
-            });
+            }, true);
         },
         /**
          * Creates the draggable columns, add the necessary drag events 
@@ -662,14 +662,14 @@
                     }
                 }
             }
-            that._events = null;
+            that._events = {};
         },
         /**
          * Use this to add events to DOM elements that are not removed by a tihs.redraw() or table.empty()
          * or JS-GC, or even a DataTableInstance.destroy()
          * The events that are registered using this method are then removed on destroy or redraw so that
          * double events are created.
-         * This method registers an "on" event to the 
+         * This method registers an "on" event by default
          * @example
          *     this._addEvent($("table"), "draw.dt", function() {
          *          // do something
@@ -678,13 +678,15 @@
          * @param $el {jQuery} element to register on
          * @param eventName {string} name of the event to register to
          * @param callback {function} callback function to call when the event is fired
+         * @param once {boolean} [default=false] if true, registeres "once" instead of "on" event listener
          * @private
          */
-        _addEvent: function($el, eventName, callback) {
+        _addEvent: function($el, eventName, callback, once) {
             var that = this;
             that._events[eventName] = that._events[eventName] || [];
             that._events[eventName].push([$el, callback]);
-            $el.on(eventName, that._events[eventName][that._events[eventName].length - 1][1]);
+            var obj = that._events[eventName][that._events[eventName].length - 1];
+            obj[0][once ? "one" : "on"](eventName, obj[1]);
         },
         /**
          * @method redraw
