@@ -1,7 +1,7 @@
 # ColResize
 
 **Doesn't always work under jQuery version `3.2.x`: [https://github.com/jquery/jquery/issues/3611]()**
-use 3.1.1 if you can until 3.3.x is available:)
+use 3.1.1 if you can until 3.3.x is available :)
 
 ColResize adds the ability for the end user to click and drag column headers to resize a DataTables table.
 
