@@ -187,6 +187,18 @@
          */
         _updatedColumns: [],
         /**
+         * Events cache object to store registered events and listeners
+         * @example 
+         *      {
+         *          "click": [ [$el1, callbackFunction], [$el2, callbackFunction2] ]
+         *      }
+         * @private
+         * @property _events
+         * @type {object}
+         * @default
+         */
+        _events: {},
+        /**
          * Interval value used to check if the table height has changed.
          * @property _tableHeight
          * @type {integer}
@@ -288,6 +300,9 @@
             that._table = $(that._dtInstance.table().node());
             that._tableBody = that._table.find("tbody");
             that.buildDom();
+            that._table.one("destroy.dt", function() {
+                that.destroy();
+            });
         },
         /**
          * Builds the draggable components together and places
@@ -322,14 +337,15 @@
             // cache jQuery columns
             that._columns = $("." + that.CLASS_COLUMN, that._container);
             that._table.before(that._container);
-
-            that._table.on("draw.dt", function() {
+            that._addEvent(that._table, "draw.dt", function() {
                 // set timeout so that table dom manipulation can be done first
                 setTimeout(function() {
                     that.checkTableHeight();
                 }, 0);
             });
-            // add window resize events etc?
+            that._dtInstance.one("column-reorder", function() {
+                that.redraw();
+            });
         },
         /**
          * Creates the draggable columns, add the necessary drag events 
@@ -514,7 +530,7 @@
             // register when a scroll is performed inside the wrapping div
             // this then forces the tbody to scroll in-sync.
             that._scrollWrapper.on("scroll", that.onScroll());
-            that._table.on("draw.dt", function() {
+            that._addEvent(that._table, "draw.dt", function() {
                 // set timeout so that table dom manipulation can be done first
                 setTimeout(function() {
                     that.syncRows();
@@ -629,13 +645,46 @@
             that._scrollContent.height(height);
         },
         /**
-         * @method clearCache
+         * @method destroy
          * @returns null
          */
-        clearCache: function() {
+        destroy: function() {
             var that = this;
+            that._container.remove();
             that._columns = [];
             that._updatedColumns = [];
+            // remove al the events that were registered using the _addEvent(...) method
+            for (var key in that._events) {
+                if (that._events.hasOwnProperty(key)) {
+                    var arr = that._events[key];
+                    for(var i = 0, l = arr.length; i<l; i++) {
+                        arr[i][0].off(key, arr[i][1]);
+                    }
+                }
+            }
+            that._events = null;
+        },
+        /**
+         * Use this to add events to DOM elements that are not removed by a tihs.redraw() or table.empty()
+         * or JS-GC, or even a DataTableInstance.destroy()
+         * The events that are registered using this method are then removed on destroy or redraw so that
+         * double events are created.
+         * This method registers an "on" event to the 
+         * @example
+         *     this._addEvent($("table"), "draw.dt", function() {
+         *          // do something
+         *     });
+         * @method _addEvent
+         * @param $el {jQuery} element to register on
+         * @param eventName {string} name of the event to register to
+         * @param callback {function} callback function to call when the event is fired
+         * @private
+         */
+        _addEvent: function($el, eventName, callback) {
+            var that = this;
+            that._events[eventName] = that._events[eventName] || [];
+            that._events[eventName].push([$el, callback]);
+            $el.on(eventName, that._events[eventName][that._events[eventName].length - 1][1]);
         },
         /**
          * @method redraw
@@ -643,8 +692,7 @@
          */
         redraw: function() {
             var that = this;
-            that._container.remove();
-            that.clearCache();
+            that.destroy();
             that.init(that._dtInstance);
         }
     });
