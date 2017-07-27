@@ -91,7 +91,16 @@
              * @type {integer|string|false}
              * @default false
              */
-            scrollY: false
+            scrollY: false,
+            /**
+             * Resizes the table instead of shrinking the next column
+             * when a specific column is resized
+             * @property resizeTable
+             * @public
+             * @type {boolean}
+             * @default false
+             */
+            resizeTable: false
         },
         /**
          * Created during extension init
@@ -338,7 +347,7 @@
                 that.initScroller();
             }
             // set the table dimensions correctly
-            that.initTableDimensions();
+            that.calcTableDimensions();
             // build and insert columns into container
             that._container.append(that.buildColDoms());
             // cache jQuery columns
@@ -369,17 +378,17 @@
         },
         /**
          * Initialises the table width and height
-         * @method initTableDimensions
+         * @method calcTableDimensions
          * @returns null
          */
-        initTableDimensions: function() {
+        calcTableDimensions: function() {
             var that = this,
                 $th,
                 thWidth = 0,
                 $ths = that._tableHeaders,    // get all table headers
                 totalWidth = 0;
             for (var i = 0, l = $ths.length; i < l; i++) {
-                $th = $($ths[i]);   // get individual <th>
+                $th = $ths.eq(i);   // get individual <th>
                 thWidth = that._getWidth($th); // get <th> current/correct width
                 $th.css("width", thWidth);
                 totalWidth += thWidth;
@@ -404,7 +413,7 @@
                 thWidth = 0;
             
             for (var i = 0, l = $ths.length; i < l; i++) {
-                $th = $($ths[i]);   // get individual <th>
+                $th = $ths.eq(i);   // get individual <th>
                 thWidth = $th.outerWidth(); // get <th> current width
                 $col = $("<div class='" + that.CLASS_COLUMN + "'></div>"); // create drag column item <div>
                 // place the drag column at the end of the <th> and as tall as the table itself
@@ -502,16 +511,20 @@
                     // takes place.
                     if (posPlusDiff < ($nextCol.position().left - that.options.minColumnWidth)) {
                         if (that.updateColumn($col, diff)) {
-                            // col was resized so resize the neighbouring col too.
-                            that.updateColumn($nextCol, diff < 0 ? Math.abs(diff) : -Math.abs(diff), true);
+                            if (!that.options.resizeTable) {
+                                // col was resized so resize the neighbouring col too.
+                                that.updateColumn($nextCol, diff < 0 ? Math.abs(diff) : -Math.abs(diff), true);
+                            } else {
+                                that._recalcPositions();
+                            }
                         }
                     }
                 } else {
                     // if we are expanding the last column
                     // or when shrinking: don't allow it to shrink smaller than the minColumnWidth
                     if(diff > 0 || (posPlusDiff > $col.prev().position().left + that.options.minColumnWidth) ) {
-                        // very last col drag bar is being dragged here (expanded)
                         if(that.updateColumn($col, diff)) {
+                            // very last col drag bar is being dragged here (expanded)
                             that.updateTableOnLastColumnMove($col, diff);
                         }
                     }
@@ -520,12 +533,13 @@
             }
         },
         updateTableOnLastColumnMove: function($col, diff) {
+            var that = this;
             // update the table width with the next size to prevent the other columns
             // going crazy
             $col.css({
                 left: Math.ceil($col.position().left + diff)
             });
-            this._table.width( Math.ceil($col.position().left) );
+            that.calcTableDimensions();
         },
         /**
          * Update the column width by a given number
@@ -560,6 +574,23 @@
                 return true;
             }
             return false;
+        },
+        /**
+         * Repositions all draggable columns and recalculates
+         * all table dimensions
+         * @method _recalcPositions
+         * @returns null
+         */
+        _recalcPositions: function() {
+            var that = this,
+                pos = that._table.position().left,
+                $th;
+            for (var i = 0, l = that._tableHeaders.length; i < l; i++) {
+                $th = that._tableHeaders.eq(i);
+                pos = pos + $th.outerWidth();
+                that._columns.eq(i).css("left", pos);
+            }
+            that.calcTableDimensions();
         },
         /**
          * Checks whether the height of the table has changed, 

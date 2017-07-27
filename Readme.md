@@ -75,7 +75,8 @@ $(document).ready( function () {
 
 Possible Options:
 - `minColumnWidth`: number [default=10] must be equal too or greater than the sum of the cell's padding (left + right)
-- `scrollY`: number [optional] much like the DT [scrollY](https://datatables.net/reference/option/scrollY). Sets a fixed header and `tbody` height with scroll functionality. Cannot be used with DT `scrollY` option.
+- `scrollY`: number [default=false] much like the DT [scrollY](https://datatables.net/reference/option/scrollY). Sets a fixed header and `tbody` height with scroll functionality. Cannot be used with DT `scrollY` option.
+- `resizeTable`: boolean [default=false] set to true if you want the entire table to be shifted when a column is resized. Default behaviour is that when a column is resized the neighbouring column expands/shrinks accordingly. If set to `true`, when a column is resized, the neighbouring column is left untouched and the table shifts accordingly.
 
 # API
 

@@ -2,9 +2,6 @@
 
     $(document).ready(function() {
         var ops = {
-            colResize: {
-                scrollY: 200
-            },
             columns: [{title: "Name"}, {title: "Job"}, {title: "Salary"}],
             data: [
                 ["Fred", "Investment Banker", "1,000,000.00"],
@@ -26,12 +23,11 @@
             autoWidth: false,
             scrollX: false
         };
-        var t = $("table").DataTable($.extend(true, {}, ops));
-        $("button").on("click", function() {
-            t.destroy();
-            $("table").empty();
-            t = $("table").DataTable($.extend(true, {}, ops));
-        });
+        $("#table1").DataTable($.extend(true, ops, {colResize: true}));
+        $("#table2").DataTable($.extend(true, ops, {colResize: {
+            scrollY: 200,
+            resizeTable: true
+        }}));
     });
     
 })(window, document, jQuery);
