@@ -621,6 +621,7 @@
                     newHeight = (newHeight - (newHeight - that._tableBody.position().top)) - topMarg ;
                 }
                 //set the the position and height of all the draggable columns
+                console.info("newHeight", newHeight)
                 that._columns.css({
                     height: newHeight,
                     top: topMarg
@@ -760,6 +761,7 @@
             that._container.remove();
             that._columns = [];
             that._updatedColumns = [];
+            that._tableHeight = null;
             // remove al the events that were registered using the _addEvent(...) method
             for (var key in that._events) {
                 if (that._events.hasOwnProperty(key)) {
@@ -772,7 +774,7 @@
             that._events = {};
         },
         /**
-         * Use this to add events to DOM elements that are not removed by a tihs.redraw() or table.empty()
+         * Use this to add events to DOM elements that are not removed by a this.redraw() or table.empty()
          * or JS-GC, or even a DataTableInstance.destroy()
          * The events that are registered using this method are then removed on destroy or redraw so that
          * double events are created.
