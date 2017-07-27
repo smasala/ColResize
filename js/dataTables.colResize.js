@@ -621,7 +621,6 @@
                     newHeight = (newHeight - (newHeight - that._tableBody.position().top)) - topMarg ;
                 }
                 //set the the position and height of all the draggable columns
-                console.info("newHeight", newHeight)
                 that._columns.css({
                     height: newHeight,
                     top: topMarg
