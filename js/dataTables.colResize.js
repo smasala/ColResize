@@ -375,6 +375,11 @@
             that._addEvent(that._table, "column-visibility.dt", function() {
                 that.redraw();
             }, true);
+            if (that.options.scrollY) {
+                that._addEvent(that._wrapper, "scroll", function() {
+                    that._scrollWrapper.css("left", that._wrapper.scrollLeft());
+                });
+            }
         },
         /**
          * Initialises the table width and height
@@ -396,6 +401,9 @@
             // set the table width correctly
             that._table.css("width", totalWidth);
             // and it's container
+            if(that.options.scrollY) {
+                totalWidth = totalWidth + 20;
+            }
             that._container.width(totalWidth);
         },
         /**
@@ -638,9 +646,6 @@
                     that.syncRows();
                     that.syncHeight();
                 }, 0);
-            });
-            $(window).resize(function() {
-                that._scrollWrapper.width(that._wrapper.width());
             });
         },
         /**

@@ -30,16 +30,14 @@
 }
 
 .dt-colresizable-scroller-wrapper {
-    position: fixed;
+    position: absolute;
     overflow-y: auto;
     overflow-x: hidden; /** FF **/
-    transform: translateZ(0);
-    padding-right: 18px;
+    width: 100%;
 }
 
 .dt-colresizable-scroller-content-wrapper {
     width: 100%;
-    transform: translateX(0);
 }
 
 .dt-colresizable-scroller-content {
