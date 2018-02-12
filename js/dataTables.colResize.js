@@ -1,11 +1,11 @@
-/**! ColResize 2.5.3
+/**! ColResize 2.5.4
  * ©2017 Steven Masala
  */
 
 /**
  * @summary ColResize
  * @description Provide the ability to resize the columns in a DataTable
- * @version 2.5.3
+ * @version 2.5.4
  * @file dataTables.colResize.js
  * @author Steven Masala <me@smasala.com>
  * @copyright Copyright 2017 Steven Masala
@@ -68,7 +68,7 @@
          * @property version
          * @type {string} semVer
          */
-        version: "2.5.3",
+        version: "2.5.4",
         /**
          * Default options for extension
          * @property _defaults
@@ -377,7 +377,7 @@
             }, true);
             if (that.options.scrollY) {
                 that._addEvent(that._wrapper, "scroll", function() {
-                    that._scrollWrapper.css("left", that._wrapper.scrollLeft());
+                    that._scrollWrapper.css("right", 0 - that._wrapper.scrollLeft());
                 });
             }
         },
@@ -670,9 +670,8 @@
             // resize the tbody to the desired height - same as the overlapping wrapper div
             that._tableBody.height(that.options.scrollY);
 
-            // make the wrapper a little bigger than the table so that the scroll-y bar
-            // doesn't appear inside, overlapping the content
-            that._scrollWrapper.width(that._wrapper.width());
+            // just wide enough to show the scrollbar
+            that._scrollWrapper.width(20);
 
             // hide the overflowing (y) tbody content
             that._tableBody.css("overflow-y", "hidden");
