@@ -1,6 +1,6 @@
 {
   "name": "dt-colresize",
-  "version": "2.5.4",
+  "version": "2.6.0",
   "description": "ColResize extenstion for DataTables. Allows the user to change the column widths by simply dragging them.",
   "main": "js/dataTables.colResize.js",
   "authors": [
