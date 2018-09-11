@@ -318,6 +318,10 @@
             that._tableBody = that._table.find("tbody");
             that._tableHeaders = that._table.find("thead > tr:first-child > th");
             that.buildDom();
+            this.initWidthFromState();
+            that._addEvent(that._table, "stateSaveParams.dt", function(_event, _settings, data) {
+                that._storeWidthData(data);
+            });
             that._addEvent(that._table, "destroy.dt", function() {
                 that.destroy();
             }, true);
@@ -355,6 +359,18 @@
             that._table.before(that._container);
             that.checkTableHeight();
             that.initEvents();
+        },
+        initWidthFromState: function() {
+            var that = this,
+                state = that._dtInstance.state.loaded(),
+                widths;
+                console.info(state);
+            if (state && state.colResize && state.colResize.widths) {
+                widths = state.colResize.widths;
+                for (var i = 0, l = widths.length; i < l; i++) {
+                    that._tableHeaders.eq(i).width(widths[i]);
+                }
+            }
         },
         /**
          * Register all events needed on ColResize init
@@ -441,6 +457,20 @@
             }
             return $cols;
         },
+
+        _storeWidthData: function(data) {
+            var that = this,
+                $ths = that._tableHeaders,
+                $th,
+                widths = [];
+            for (var i = 0, l = $ths.length; i < l; i++) {
+                $th = $ths.eq(i);   // get individual <th>
+                widths.push(that._getWidth($th)); // get <th> current/correct width
+            }
+            data.colResize = {
+                widths: widths
+            }
+        },
         /**
          * Get the current or correct th element width.
          * If the th element has an inline width set "style='width: 100px'" then this
@@ -492,6 +522,7 @@
                     // remove the drag (mousemove) event listener
                     $(document).off("mousemove", mouseMoveFunc);
                     $(that._table).trigger($.Event( "column-resized.dt" ), [$col.index(), $col.data(that.DATA_TAG_ITEM).outerWidth()] );
+                    that._dtInstance.state.save();
                 }).on("mousemove", mouseMoveFunc);  //on mousemove
                 return false;   // stop text highlighting
             };
@@ -775,7 +806,7 @@
          * Use this to add events to DOM elements that are not removed by a this.redraw() or table.empty()
          * or JS-GC, or even a DataTableInstance.destroy()
          * The events that are registered using this method are then removed on destroy or redraw so that
-         * double events are created.
+         * double events are not created.
          * This method registers an "on" event by default
          * @example
          *     this._addEvent($("table"), "draw.dt", function() {

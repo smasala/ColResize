@@ -28,6 +28,7 @@
             scrollY: 200,
             resizeTable: true
         }}));
+        $("#table3").DataTable($.extend(true, ops, {colResize: true, stateSave: true}));
     });
     
 })(window, document, jQuery);
