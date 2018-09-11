@@ -317,11 +317,10 @@
             that._table = $(that._dtInstance.table().node());
             that._tableBody = that._table.find("tbody");
             that._tableHeaders = that._table.find("thead > tr:first-child > th");
-            that.buildDom();
-            this.initWidthFromState();
             that._addEvent(that._table, "stateSaveParams.dt", function(_event, _settings, data) {
                 that._storeWidthData(data);
             });
+            that.buildDom();
             that._addEvent(that._table, "destroy.dt", function() {
                 that.destroy();
             }, true);
@@ -334,7 +333,8 @@
          */
         buildDom: function() {
             var that = this,
-                redraw = !!(that._wrapper);
+                redraw = !!(that._wrapper),
+                defaultWidths;
             // wrap the table so that the overflow can be controlled when
             // resizing a big table on a small screen
             if (!redraw) {
@@ -350,26 +350,31 @@
             if (!redraw && that.options.scrollY) {
                 that.initScroller();
             }
+            //get any default widths from the store
+            defaultWidths = that.getStoreWidths();
             // set the table dimensions correctly
-            that.calcTableDimensions();
+            that.calcTableDimensions(defaultWidths);
             // build and insert columns into container
             that._container.append(that.buildColDoms());
+            // resave the state, they get lost the second time.
+            if (defaultWidths && defaultWidths.length) {
+                that._dtInstance.state.save();
+            }
             // cache jQuery columns
             that._columns = $("." + that.CLASS_COLUMN, that._container);
             that._table.before(that._container);
             that.checkTableHeight();
             that.initEvents();
         },
-        initWidthFromState: function() {
+        /**
+         * Get all the widths for columns out of the datatable storage when state saving is enabled
+         * @returns {Array<number>|null}
+         */
+        getStoreWidths: function() {
             var that = this,
-                state = that._dtInstance.state.loaded(),
-                widths;
-                console.info(state);
+                state = that._dtInstance.state.loaded();
             if (state && state.colResize && state.colResize.widths) {
-                widths = state.colResize.widths;
-                for (var i = 0, l = widths.length; i < l; i++) {
-                    that._tableHeaders.eq(i).width(widths[i]);
-                }
+                return state.colResize.widths;
             }
         },
         /**
@@ -400,9 +405,11 @@
         /**
          * Initialises the table width and height
          * @method calcTableDimensions
+         * @param widths {Array<number>|null} [default=null] if passed then sets the 
+         *                                      default width state of the columns
          * @returns null
          */
-        calcTableDimensions: function() {
+        calcTableDimensions: function(widths) {
             var that = this,
                 $th,
                 thWidth = 0,
@@ -410,14 +417,14 @@
                 totalWidth = 0;
             for (var i = 0, l = $ths.length; i < l; i++) {
                 $th = $ths.eq(i);   // get individual <th>
-                thWidth = that._getWidth($th); // get <th> current/correct width
+                thWidth = widths ? widths[i] : that._getWidth($th); // get <th> current/correct width
                 $th.css("width", thWidth);
                 totalWidth += thWidth;
             }
             // set the table width correctly
             that._table.css("width", totalWidth);
             // and it's container
-            if(that.options.scrollY) {
+            if (that.options.scrollY) {
                 totalWidth = totalWidth + 20;
             }
             that._container.width(totalWidth);
