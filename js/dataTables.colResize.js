@@ -278,6 +278,16 @@
          */
         CLASS_SCROLLER_CONTENT_WRAPPER: "dt-colresizable-scroller-content-wrapper",
         /**
+         * data tag name to save the column width <th>
+         * saved on the draggable col <div>
+         * @private
+         * @property DATA_TAG_WIDTH
+         * @type {string}
+         * @private
+         * @default "dt-colresizable-width"
+         */
+        DATA_TAG_WIDTH: "dt-colresizable-width",
+        /**
          * data tag name to save the column item <th>
          * saved on the draggable col <div>
          * @private
@@ -428,50 +438,31 @@
             // replicate table header widths
             var that = this,
                 $ths = that._tableHeaders,    // get all table headers
-                $cols = [];
-
+                $th,
+                $cols = [],
+                $col,
+                thWidth = 0;
+            
             for (var i = 0, l = $ths.length; i < l; i++) {
-                var $th = $ths.eq(i),   // get individual <th>
-                    $col = $("<div class='" + that.CLASS_COLUMN + "'></div>"); // create drag column item <div>
-
-                // save the <th> element reference for easy access later
-                $col.data(that.DATA_TAG_ITEM, $th);
-
+                $th = $ths.eq(i);   // get individual <th>
+                thWidth = $th.outerWidth(); // get <th> current width
+                $col = $("<div class='" + that.CLASS_COLUMN + "'></div>"); // create drag column item <div>
                 // place the drag column at the end of the <th> and as tall as the table itself
-                that._initColPositionByHeader($col);
-
+                $col.css({
+                    left: Math.ceil($th.position().left + thWidth)
+                });
                 // save the prev col item for speed rather than using the .prev() function
                 $col.data(that.DATA_TAG_PREV_COL, $cols[ i - 1 ]);
+                // save the current width
+                $col.data(that.DATA_TAG_WIDTH, thWidth);
+                // save the <th> element reference for easy access later
+                $col.data(that.DATA_TAG_ITEM, $th);
                 // register necessary events
                 that.registerEvents($col);
                 // push created drag column element in array
                 $cols.push($col);
             }
             return $cols;
-        },
-
-        _isLTR: function () {
-            return this._table.css('direction') !== 'rtl';
-        },
-
-        _initColPositionByHeader($col) {
-            var that = this,
-                $th = $col.data(that.DATA_TAG_ITEM),
-                thLeft = $th.position().left;
-
-            if (that._isLTR()) {
-                var thWidth = $th.outerWidth();
-                $col.css({
-                    left: Math.ceil(thLeft + thWidth)
-                });
-            }
-            else {
-                var tblLeft = that._table.position().left;
-
-                $col.css({
-                    right: Math.ceil($th.parent().outerWidth() + tblLeft - thLeft)
-                });
-            }
         },
 
         _storeWidthData: function(data) {
@@ -485,7 +476,7 @@
             }
             data.colResize = {
                 widths: widths
-            };
+            }
         },
         /**
          * Get the current or correct th element width.
@@ -561,115 +552,89 @@
                 diff = Math.ceil(event.clientX - $col.offset().left);
                 $nextCol = $col.next();
                 posPlusDiff = Math.ceil($col.position().left + diff);
-
-                var isLTR = this._isLTR();
-                if (!isLTR) {
-                    diff = -diff;
-                }
-
                 if ($nextCol.length) {
                     // check whether neighbouring is still bigger than 10px if a resize
                     // takes place.
-                    var nextColLeft = $nextCol.position().left;
-                    var hasSpaceToNext = that.options.resizeTable || (isLTR ?
-                        posPlusDiff < nextColLeft - that.options.minColumnWidth :
-                        posPlusDiff >= nextColLeft + that.options.minColumnWidth);
-
-                    if (hasSpaceToNext && that.updateColumn($col, diff, true)) {
-                        if (!that.options.resizeTable) {
-                            // col was resized so resize the neighbouring col too.
-                            that.updateColumn($nextCol, diff < 0 ? Math.abs(diff) : -Math.abs(diff));
+                    if (posPlusDiff < ($nextCol.position().left - that.options.minColumnWidth)) {
+                        if (that.updateColumn($col, diff)) {
+                            if (!that.options.resizeTable) {
+                                // col was resized so resize the neighbouring col too.
+                                that.updateColumn($nextCol, diff < 0 ? Math.abs(diff) : -Math.abs(diff), true);
+                            } else {
+                                that._recalcPositions();
+                            }
                         }
-                        else {
-                            that._recalcPositions($col, diff);
+                    }
+                } else {
+                    // if we are expanding the last column
+                    // or when shrinking: don't allow it to shrink smaller than the minColumnWidth
+                    if(diff > 0 || (posPlusDiff > $col.prev().position().left + that.options.minColumnWidth) ) {
+                        if(that.updateColumn($col, diff)) {
+                            // very last col drag bar is being dragged here (expanded)
+                            that.updateTableOnLastColumnMove($col, diff);
                         }
                     }
                 }
-                else if (that.updateColumn($col, diff, true)) {
-                    // update the table width with the next size to prevent the other columns
-                    // going crazy
-                    that.calcTableDimensions();
-                }
-
                 that.checkTableHeight();
             }
+        },
+        updateTableOnLastColumnMove: function($col, diff) {
+            var that = this;
+            // update the table width with the next size to prevent the other columns
+            // going crazy
+            $col.css({
+                left: Math.ceil($col.position().left + diff)
+            });
+            that.calcTableDimensions();
         },
         /**
          * Update the column width by a given number
          * @method updateColumn
          * @param {jQuery} $col - column that needs a size adjustment
          * @param {integer} by - width to change the column size by
-         * @param {boolean} nextColumn [default=false] - set to true if the column being resized is the original and should move it's position
+         * @param {boolean} nextColumn [default=false] - set to true if the column being resized is not the original but
+         * it's sibling.
          * @return {boolean} {true} if resize was possible, {false} if not;
          */
-        updateColumn: function($col, by, updatePosition) {
+        updateColumn: function($col, by, nextColumn) {
             var that = this,
-                $prevCol = $col.prev(),
-                positionAttr = that._isLTR() ? 'left' : 'right';
-
-            // calculate the new width of the column
-            var position = parseFloat($col.css(positionAttr));
-            if ($prevCol.length) {
-                position -= parseFloat($prevCol.css(positionAttr));
-            }
-
-            var newWidth = position + by;
-
+                // calculate the new width of the column
+                newWidth = Math.ceil(by + $col.data(that.DATA_TAG_WIDTH));
             //only resize to a min of 10px
             if (newWidth > that.options.minColumnWidth) {
-                // set the new let position of the dragged column (div)
-                if (updatePosition) {
-                    that.updateResizerPosition($col, by);
-                }
-
                 // get the actual <th> column of the table and set the new width
-                var $th = $col.data(that.DATA_TAG_ITEM);
-
-                $th.css({
+                $col.data(that.DATA_TAG_ITEM).css({
                     width: newWidth
                 });
-
+                // save the new width for the next mouse drag call
+                $col.data(that.DATA_TAG_WIDTH, newWidth);
+                if(nextColumn) {
+                    // set the new let position of the dragged column (div)
+                    $col.data(that.DATA_TAG_PREV_COL).css({
+                        left: Math.ceil($col.data(that.DATA_TAG_ITEM).position().left)
+                    });
+                }
                 if (that.options.scrollY) {
                     that.updateCells($col.index(), newWidth);
                 }
-
                 return true;
             }
             return false;
         },
         /**
-         * Update the resizer position by a given number
-         * @method moveResizer
-         * @param {jQuery} $col - column that needs a position adjustment.
-         * @param {integer} diff - width to change the column position.
-         * @return {boolean} {true} if resize was possible, {false} if not;
-         */
-        updateResizerPosition: function ($col, diff) {
-            var that = this;
-            if (that._isLTR()) {
-                $col.css({
-                    left: $col.position().left + diff
-                });
-            }
-            else {
-                $col.css({
-                    right: parseFloat($col.css('right')) + diff
-                });
-            }
-        },
-        /**
          * Repositions all draggable columns and recalculates
          * all table dimensions
          * @method _recalcPositions
-         * @param {jQuery} $col - column that trigger this action.
-         * @param {integer} diff - width to change the column position.
          * @returns null
          */
-        _recalcPositions: function($col, diff) {
+        _recalcPositions: function() {
             var that = this,
-                nextColIndex = $col.index() + 1;
-            for (var i = nextColIndex, l = that._tableHeaders.length; i < l; i++) {
-                that.updateResizerPosition(that._columns.eq(i), diff);
+                pos = that._table.position().left,
+                $th;
+            for (var i = 0, l = that._tableHeaders.length; i < l; i++) {
+                $th = that._tableHeaders.eq(i);
+                pos = pos + $th.outerWidth();
+                that._columns.eq(i).css("left", pos);
             }
             that.calcTableDimensions();
         },
