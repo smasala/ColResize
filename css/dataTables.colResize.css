@@ -47,14 +47,12 @@
 
 .dt-colresizable-with-scroller table thead,
 .dt-colresizable-with-scroller table tbody tr {
-    display: table;
     table-layout: fixed;
     width: 100%;    
 }
 
 .dt-colresizable-with-scroller table tbody {
     overflow-y: auto;
-    display: block;
 }
 
 table.dataTable {
